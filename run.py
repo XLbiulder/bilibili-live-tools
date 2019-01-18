@@ -16,7 +16,7 @@ from bilitimer import BiliTimer
 
 
 loop = asyncio.get_event_loop()
-fileDir = os.path.dirname(os.path.realpath('__file__'))
+fileDir = os.path.dirname(os.path.realpath(__file__))
 
 conf = ConfigLoader(fileDir)
 area_ids = conf.dic_user['other_control']['area_ids']

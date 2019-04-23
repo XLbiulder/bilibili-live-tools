@@ -1,5 +1,5 @@
 requests
 rsa
 aiohttp
-Pillow
+# Pillow 当你需要自己输入验证码的时候请安装
 toml

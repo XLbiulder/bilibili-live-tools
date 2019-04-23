@@ -2,7 +2,10 @@ from online_net import OnlineNet
 import printer
 import time
 import datetime
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
 from io import BytesIO
 import webbrowser
 import re
@@ -38,6 +41,7 @@ def seconds_until_tomorrow():
     current_time = int(time.mktime(datetime.datetime.now().timetuple()))
     return tomorrow_start_time - current_time
 
+
 async def WearingMedalInfo():
     json_response = await OnlineNet().req('ReqWearingMedal')
     # print(json_response)
@@ -45,12 +49,13 @@ async def WearingMedalInfo():
         data = json_response['data']
         if data:
             # print(data['roominfo']['room_id'], data['today_feed'], data['day_limit'])
-            return [(data['roominfo']['room_id'],  int(data['day_limit']) - int(data['today_feed']), data['medal_name']), ]
+            return [(data['roominfo']['room_id'], int(data['day_limit']) - int(data['today_feed']), data['medal_name']), ]
         else:
             # print('暂无佩戴任何勋章')
             return []
 
         # web api返回值信息少
+
 
 async def TitleInfo():
     json_response = await OnlineNet().req('ReqTitleInfo')
@@ -64,6 +69,7 @@ async def TitleInfo():
             else:
                 max = '-'
             print(dic_title[i['title_pic']['id']], i['activity'], i['score'], max)
+
 
 async def fetch_medal(show=True, list_wanted_medal=None):
     printlist = []
@@ -94,9 +100,11 @@ async def fetch_medal(show=True, list_wanted_medal=None):
             list_return_medal = [i[:3] for i in sorted(list_medal, key=itemgetter(3), reverse=True)]
         return list_return_medal
 
+
 async def send_danmu_msg_web(msg, roomId):
     json_response = await OnlineNet().req('request_send_danmu_msg_web', msg, roomId)
     print(json_response)
+
 
 async def find_live_user_roomid(wanted_name):
     print(wanted_name)
@@ -163,6 +171,7 @@ async def fetch_capsule_info():
         else:
             print('普通扭蛋币暂不可用')
 
+
 async def open_capsule(count):
     json_response = await OnlineNet().req('request_open_capsule', count)
     # print(json_response)
@@ -170,6 +179,7 @@ async def open_capsule(count):
         # print(json_response['data']['text'])
         for i in json_response['data']['text']:
             print(i)
+
 
 async def watch_living_video(cid):
     import sound
@@ -182,6 +192,7 @@ async def watch_living_video(cid):
         data = json_response['data']
         print(data)
         webbrowser.open(data)
+
 
 async def fetch_user_info():
     json_response = await OnlineNet().req('request_fetch_user_info')
@@ -211,12 +222,13 @@ async def fetch_user_info():
         print('# 用户名', uname)
         size = 100, 100
         response_face = await OnlineNet().req('request_load_img', userInfo['face'])
-        img = Image.open(BytesIO(await response_face.read()))
-        img.thumbnail(size)
-        try:
-            img.show()
-        except:
-            pass
+        if Image is not None:
+            img = Image.open(BytesIO(await response_face.read()))
+            img.thumbnail(size)
+            try:
+                img.show()
+            except:
+                pass
         print(f'# 手机认证状况 {mobile_verify} | 实名认证状况 {identification}')
         print('# 银瓜子', silver)
         print('# 通用金瓜子', gold)
@@ -233,6 +245,7 @@ async def fetch_user_info():
         process_bar = '# [' + '>' * arrow + '-' * line + ']' + '%.2f' % percent + '%'
         print(process_bar)
         print('# 等级榜', user_level_rank)
+        
 
 async def fetch_bag_list(verbose=False, bagid=None, show=True):
     json_response = await OnlineNet().req('request_fetch_bag_list')
@@ -264,6 +277,7 @@ async def fetch_bag_list(verbose=False, bagid=None, show=True):
         gift_list.append([gift_id, gift_num, bag_id, left_time])
     # print(gift_list)
     return gift_list
+
 
 async def check_taskinfo():
     json_response = await OnlineNet().req('request_check_taskinfo')
@@ -315,6 +329,7 @@ async def check_taskinfo():
         else:
             print('# 未完成(目前本项目未实现自动完成直播任务)')
 
+
 async def check_room(roomid):
     json_response = await OnlineNet().req('request_check_room', roomid)
     if not json_response['code']:
@@ -332,6 +347,7 @@ async def check_room(roomid):
     elif json_response['code'] == 60004:
         print(json_response['msg'])
 
+
 async def send_gift_web(roomid, num_wanted, bagid, giftid=None):
     if giftid is None:
         giftid, num_owned = await fetch_bag_list(False, bagid)
@@ -348,6 +364,7 @@ async def send_gift_web(roomid, num_wanted, bagid, giftid=None):
         print(f'# 送出礼物: {json_response1["data"]["gift_name"]}X{json_response1["data"]["gift_num"]}')
     else:
         print("# 错误", json_response1['msg'], roomid, num_wanted, bagid, giftid)
+
 
 async def fetch_liveuser_info(real_roomid):
     json_response = await OnlineNet().req('request_fetch_liveuser_info', real_roomid)
@@ -367,12 +384,14 @@ async def fetch_liveuser_info(real_roomid):
 
         size = 100, 100
         response_face = await OnlineNet().req('request_load_img', data['info']['face'])
-        img = Image.open(BytesIO(await response_face.read()))
-        img.thumbnail(size)
-        try:
-            img.show()
-        except:
-            pass
+        if Image is not None:
+            img = Image.open(BytesIO(await response_face.read()))
+            img.thumbnail(size)
+            try:
+                img.show()
+            except:
+                pass
+
 
 async def enter_room(roomid):
     json_response = await OnlineNet().req('request_check_room', roomid)
@@ -389,6 +408,7 @@ async def enter_room(roomid):
         else:
             await OnlineNet().req('post_watching_history', roomid)
             return True
+
 
 async def GiveCoin2Av(video_id, num):
     if num not in (1, 2):
@@ -407,11 +427,13 @@ async def GiveCoin2Av(video_id, num):
             return None
         return False
 
+
 async def GetTopVideoList():
     text_rsp = await OnlineNet().req('req_fetch_av')
     list_av = re.findall(r'(?<=www.bilibili.com/video/av)\d+(?=/)', text_rsp)
     list_av = list(set(list_av))
     return list_av
+
 
 async def fetch_uper_video(list_mid):
     list_av = []
@@ -430,10 +452,12 @@ async def fetch_uper_video(list_mid):
     # print(len(list_av), list_av)
     return list_av
 
+
 async def GetVideoCid(video_aid):
     json_rsp = await OnlineNet().req('ReqVideoCid', video_aid)
     # print(json_rsp[0]['cid'])
     return (json_rsp[0]['cid'])
+
 
 async def GetRewardInfo(show=True):
     json_rsp = await OnlineNet().req('ReqMasterInfo')

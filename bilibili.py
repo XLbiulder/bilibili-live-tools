@@ -8,7 +8,10 @@ import aiohttp
 import asyncio
 import random
 import json
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
 from io import BytesIO
 
 
@@ -32,10 +35,13 @@ def cnn_captcha(content):
  
        
 def input_captcha(content):
-    img = Image.open(BytesIO(content))
-    # img.thumbnail(size)
-    img.show()
-    captcha = input('手动输入验证码')
+    if Image is not None:
+        img = Image.open(BytesIO(content))
+        # img.thumbnail(size)
+        img.show()
+        captcha = input('手动输入验证码')
+    else:
+        captcha = input('您并没有安装pillow模块，但仍然选择了手动输入，那就输呀:')
     return captcha
 
 
